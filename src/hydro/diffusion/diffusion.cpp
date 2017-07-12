@@ -23,10 +23,13 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
   pmb_ = pmy_hydro_->pmy_block;
   pco_ = pmb_->pcoord;
   hydro_diffusion_defined = false;
+  therm_diffusion_defined = false;
 
-  // read parameters such as viscosity from input block
+  // read parameters such as viscosity, thermal conductivity, from input block
   nuiso_ = pin->GetOrAddReal("problem","nuiso",0.0); // first coefficient
   inu_   = pin->GetOrAddInteger("problem","inu",0);  // default constant nuiso
+  // The thermal conductivity is normalized (TODO: How?)
+  chiiso_ = pin->GetOrAddReal("problem", "chiiso_", 0.0);
   if (nuiso_ != 0.0) {
     hydro_diffusion_defined = true;
     // Allocate memory for fluxes
@@ -49,6 +52,7 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
     fz_.NewAthenaArray(ncells1);
     divv_.NewAthenaArray(ncells3,ncells2,ncells1);
   }
+  else if 
   //else {
   //  std::cout << "[HydroDiffusion]: unable to construct hydrodiffusion class" << std::endl;
   //}

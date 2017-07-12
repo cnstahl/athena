@@ -29,6 +29,7 @@ public:
 
   // data
   bool hydro_diffusion_defined;
+  bool therm_diffusion_defined;
   AthenaArray<Real> diflx[3]; //stress tensor
 
   // functions
@@ -66,6 +67,7 @@ private:
   Hydro *pmy_hydro_;  // ptr to Hydro containing this HydroDiffusion
   Coordinates *pco_;  // ptr to coordinates class
   Real nuiso_, inu_;        // iso viscosity and option flag
+  Real chiiso_;             // thermal diffusion constant, normalized
   AthenaArray<Real> divv_; // divergence of velocity
   AthenaArray<Real> x1area_,x2area_,x2area_p1_,x3area_,x3area_p1_;
   AthenaArray<Real> vol_;
