@@ -52,7 +52,29 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
     fz_.NewAthenaArray(ncells1);
     divv_.NewAthenaArray(ncells3,ncells2,ncells1);
   }
-  else if 
+  else if (chiiso_ != 0.0) {
+    therm_diffusion_defined = true;
+    // Allocate memory for fluxes
+    int ncells1 = pmb_->block_size.nx1 + 2*(NGHOST);
+    int ncells2 = 1, ncells3 = 1;
+    if (pmb_->block_size.nx2 > 1) ncells2 = pmb_->block_size.nx2 + 2*(NGHOST);
+    if (pmb_->block_size.nx3 > 1) ncells3 = pmb_->block_size.nx3 + 2*(NGHOST);
+    //TODO: Allocate only arrays for energy, instead of NHYDRO?
+    diflx[X1DIR].NewAthenaArray(NHYDRO,ncells3,ncells2,ncells1+1);
+    diflx[X2DIR].NewAthenaArray(NHYDRO,ncells3,ncells2+1,ncells1);
+    diflx[X3DIR].NewAthenaArray(NHYDRO,ncells3+1,ncells2,ncells1);
+
+    x1area_.NewAthenaArray(ncells1+1);
+    x2area_.NewAthenaArray(ncells1);
+    x3area_.NewAthenaArray(ncells1);
+    x2area_p1_.NewAthenaArray(ncells1);
+    x3area_p1_.NewAthenaArray(ncells1);
+    vol_.NewAthenaArray(ncells1);
+    fx_.NewAthenaArray(ncells1);
+    fy_.NewAthenaArray(ncells1);
+    fz_.NewAthenaArray(ncells1);
+    divv_.NewAthenaArray(ncells3,ncells2,ncells1);
+  }
   //else {
   //  std::cout << "[HydroDiffusion]: unable to construct hydrodiffusion class" << std::endl;
   //}
@@ -93,6 +115,9 @@ void HydroDiffusion::CalcHydroDiffusionFlux(const AthenaArray<Real> &prim,
 
   // isotropic viscosity: to calc and add the flux due to viscous stress
   if (nuiso_ != 0.0) Viscosity(prim, cons, diflx);
+
+  // isotropic conductivity: calc and add fluxes due to thermal anisotropy
+  if (chiiso_ != 0.0) ThDiff(prim, cons, diflx);
 
   return;
 }

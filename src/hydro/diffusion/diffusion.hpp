@@ -62,6 +62,12 @@ public:
   void FaceZdz(const int k, const int j, const int il, const int iu,
     const AthenaArray<Real> &prim, AthenaArray<Real> &len);
 
+  // thermal diffusion
+  // TODO: clean up these declarations
+  // TODO: Should this be a function?
+  Real chiiso1(void);
+  void ThDiff(const AthenaArray<Real> &p,const AthenaArray<Real> &c, AthenaArray<Real> *flx);
+
 private:
   MeshBlock *pmb_;    // ptr to meshblock containing this HydroDiffusion
   Hydro *pmy_hydro_;  // ptr to Hydro containing this HydroDiffusion
