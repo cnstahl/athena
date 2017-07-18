@@ -30,9 +30,9 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
   Real denf;
 
 
-// step-1. calculate the flux due to thermal difusion
-// i-direction
-// set the loop limits
+  // step-1. calculate the flux due to thermal difusion
+  // i-direction
+  // set the loop limits
   jl=js, ju=je, kl=ks, ku=ke;
   if (MAGNETIC_FIELDS_ENABLED) {
     if(pmb_->block_size.nx2 > 1) {
@@ -44,26 +44,20 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
   }
   for (int k=kl; k<=ku; ++k){
     for (int j=jl; j<=ju; ++j){
-      // compute fluxes
-      FaceXdx(k,j,is,ie+1,prim,fx_);
-      FaceXdy(k,j,is,ie+1,prim,fy_);
-      FaceXdz(k,j,is,ie+1,prim,fz_);
-      // store fluxes
+      // compute and store fluxes
       for (int i=is; i<=ie+1; ++i){
-		Real nu1 = nuiso1(prim,IM1,k,j,i);
+		    Real chi1 = chiiso1();
         denf = 0.5*(prim(IDN,k,j,i)+prim(IDN,k,j,i-1));
-        x1flux(IM1,k,j,i) = -denf*nu1*(fx_(i)+nuiso2*0.5*(divv_(k,j,i)+divv_(k,j,i-1)));
-        x1flux(IM2,k,j,i) = -denf*nu1*fy_(i);
-        x1flux(IM3,k,j,i) = -denf*nu1*fz_(i);
-        if(NON_BAROTROPIC_EOS)
-          x1flux(IEN,k,j,i) = 0.5*((prim(IM1,k,j,i-1)+prim(IM1,k,j,i))*x1flux(IM1,k,j,i) +
-                                (prim(IM2,k,j,i-1)+prim(IM2,k,j,i))*x1flux(IM2,k,j,i) +
-                                (prim(IM3,k,j,i-1)+prim(IM3,k,j,i))*x1flux(IM3,k,j,i));
+        fx_(i) = (prim(IPR,k,j,i)/prim(IDN,k,j,i) - prim(IPR,k,j,i-1)/
+                  prim(IDN,k,j,i-1))/pco_->dx1v(i-1);
+        // TODO: minus sign?
+        x1flux(IEN,k,j,i) = -denf * chi1 * fx_(i);
       }
-  }}
+    }
+  }
 
-// j-direction
-// set the loop limits
+  // j-direction
+  // set the loop limits
   il=is, iu=ie, kl=ks, ku=ke;
   if (MAGNETIC_FIELDS_ENABLED) {
     if(pmb_->block_size.nx3 == 1) // 2D
@@ -75,50 +69,22 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
     for (int k=kl; k<=ku; ++k){
       for (int j=js; j<=je+1; ++j){
         // compute fluxes
-        FaceYdx(k,j,is,ie,prim,fx_);
-        FaceYdy(k,j,is,ie,prim,fy_);
-        FaceYdz(k,j,is,ie,prim,fz_);
+        for (int i=is; i<=ie; ++i){
+          fy_(i) = (prim(IPR,k,j,i)/prim(IDN,k,j,i)-prim(IPR,k,j-1,i)/
+                    prim(IDN,k,j-1,i))/pco_->h2v(i)/pco_->dx2v(j-1);
+        }
         // store fluxes
         for(int i=il; i<=iu; i++) {
-		  Real nu1 = nuiso1(prim,IM1,k,j,i);
+		      Real chi1 = chiiso1();
           denf = 0.5*(prim(IDN,k,j+1,i)+prim(IDN,k,j,i));
-          x2flux(IM1,k,j,i) = -denf*nu1*fx_(i);
-          x2flux(IM2,k,j,i) = -denf*nu1*
-                           (fy_(i)+nuiso2*0.5*(divv_(k,j+1,i)+divv_(k,j,i)));
-          x2flux(IM3,k,j,i) = -denf*nu1*fz_(i);
-          if (NON_BAROTROPIC_EOS)
-            x2flux(IEN,k,j,i) = 0.5*((prim(IM1,k,j,i)+prim(IM1,k,j+1,i))*x2flux(IM1,k,j,i) +
-                                  (prim(IM2,k,j,i)+prim(IM2,k,j+1,i))*x2flux(IM2,k,j,i) +
-                                  (prim(IM3,k,j,i)+prim(IM3,k,j+1,i))*x2flux(IM3,k,j,i));
+          x2flux(IEN,k,j,i) = -denf * chi1 * fy_(i);
         }
-    }}
-  } else { // 1D
-    // compute fluxes
-    FaceYdx(ks,js,is,ie,prim,fx_);
-    FaceYdy(ks,js,is,ie,prim,fy_);
-    FaceYdz(ks,js,is,ie,prim,fz_);
-    // store fluxes
-    for(int i=il; i<=iu; i++) {
-	  Real nu1 = nuiso1(prim,IM1,ks,js,i);
-      denf = prim(IDN,ks,js,i);
-      x2flux(IM1,ks,js,i) = -denf*nu1*fx_(i);
-      x2flux(IM2,ks,js,i) = -denf*nu1*(fy_(i)+nuiso2*divv_(ks,js,i));
-      x2flux(IM3,ks,js,i) = -denf*nu1*fz_(i);
-      if (NON_BAROTROPIC_EOS)
-        x2flux(IEN,ks,js,i) = prim(IM1,ks,js,i)*x2flux(IM1,ks,js,i) +
-                              prim(IM2,ks,js,i)*x2flux(IM2,ks,js,i) +
-                              prim(IM3,ks,js,i)*x2flux(IM3,ks,js,i);
-    }
-    for(int i=il; i<=iu; i++) {
-      x2flux(IM1,ks,je+1,i) = x2flux(IM1,ks,js,i);
-      x2flux(IM2,ks,je+1,i) = x2flux(IM2,ks,js,i);
-      x2flux(IM3,ks,je+1,i) = x2flux(IM3,ks,js,i);
-      if (NON_BAROTROPIC_EOS)
-        x2flux(IEN,ks,je+1,i) =x2flux(IEN,ks,js,i);
+      }
     }
   }
-// k-direction
-// set the loop limits
+
+  // k-direction
+  // set the loop limits
   il=is, iu=ie, jl=js, ju=je;
   if (MAGNETIC_FIELDS_ENABLED) {
     if(pmb_->block_size.nx2 > 1) // 2D or 3D
@@ -130,47 +96,21 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
     for (int k=ks; k<=ke+1; ++k){
       for (int j=jl; j<=ju; ++j){
         // compute fluxes
-        FaceZdx(k,j,is,ie,prim,fx_);
-        FaceZdy(k,j,is,ie,prim,fy_);
-        FaceZdz(k,j,is,ie,prim,fz_);
+        for (int i=is; i<=ie; ++i){
+          fz_(i) = (prim(IPR,k,j,i)/prim(IDN,k,j,i)-prim(IPR,k-1,j,i)/
+                   prim(IDN,k-1,j,i))/pco_->dx3v(k-1)/pco_->h31v(i)/pco_->h32v(j);
+        }
         // store fluxes
         for(int i=il; i<=iu; i++) {
-	      Real nu1 = nuiso1(prim,IM1,k,j,i);
+	        Real chi1 = chiiso1();
           denf = 0.5*(prim(IDN,k+1,j,i)+prim(IDN,k,j,i));
-          x3flux(IM1,k,j,i) = -denf*nu1*fx_(i);
-          x3flux(IM2,k,j,i) = -denf*nu1*fy_(i);
-          x3flux(IM3,k,j,i) = -denf*nu1*(fz_(i)+nuiso2*0.5*(divv_(k+1,j,i)+divv_(k,j,i)));
-          if (NON_BAROTROPIC_EOS)
-            x3flux(IEN,k,j,i) = 0.5*((prim(IM1,k,j,i)+prim(IM1,k+1,j,i))*x3flux(IM1,k,j,i) +
-                                    (prim(IM2,k,j,i)+prim(IM2,k+1,j,i))*x3flux(IM2,k,j,i) +
-                                    (prim(IM3,k,j,i)+prim(IM3,k+1,j,i))*x3flux(IM3,k,j,i));
-        }
-    }}
-  } else {
-    for (int j=jl; j<=ju; ++j){
-      // compute fluxes
-      FaceZdx(ks,j,is,ie,prim,fx_);
-      FaceZdy(ks,j,is,ie,prim,fy_);
-      FaceZdz(ks,j,is,ie,prim,fz_);
-      // store fluxes
-      for(int i=il; i<=iu; i++) {
-	    Real nu1 = nuiso1(prim,IM1,ks,j,i);
-        denf = prim(IDN,ks,j,i);
-        x3flux(IM1,ks,j,i) = -denf*nu1*fx_(i);
-        x3flux(IM2,ks,j,i) = -denf*nu1*fy_(i);
-        x3flux(IM3,ks,j,i) = -denf*nu1*(fz_(i)+nuiso2*divv_(ks,j,i));
-        x3flux(IM1,ke+1,j,i) = x3flux(IM1,ks,j,i);
-        x3flux(IM2,ke+1,j,i) = x3flux(IM2,ks,j,i);
-        x3flux(IM3,ke+1,j,i) = x3flux(IM3,ks,j,i);
-        if (NON_BAROTROPIC_EOS){
-          x3flux(IEN,ks,j,i) = prim(IM1,ks,j,i)*x3flux(IM1,ks,j,i) +
-                               prim(IM2,ks,j,i)*x3flux(IM2,ks,j,i) +
-                               prim(IM3,ks,j,i)*x3flux(IM3,ks,j,i);
-          x3flux(IEN,ke+1,j,i) = x3flux(IEN,ks,j,i);
+          x3flux(IEN,k,j,i) = -denf * chi1 * fz_(i);
+
         }
       }
-    }}
-
+    }
+  }
+  
   return;
 }
 
@@ -180,51 +120,3 @@ Real HydroDiffusion::chiiso1(void)
 {
   return (chiiso_);
 }
-
-// Flux of T in x dir
-void HydroDiffusion::CondX(const int k, const int j, const int il, const int iu,
-    const AthenaArray<Real> &prim, AthenaArray<Real> &len)
-{
-  for (int i=il; i<=iu; ++i){
-    len(i) = (prim(IPR,k,j,i)/prim(IDN,k,j,i) - prim(IPR,k,j,i)/
-              prim(IDN,k,j,i))/pco_->dx1v(i-1);
-  }
-  return;
-}
-
-// Flux of T in y dir
-void HydroDiffusion::CondY(const int k, const int j, const int il, const int iu,
-    const AthenaArray<Real> &prim, AthenaArray<Real> &len)
-{
-  if(pmb_->block_size.nx2 > 1) {
-    for (int i=il; i<=iu; ++i){
-      len(i) = 2.0*(prim(IM2,k,j,i)-prim(IM2,k,j-1,i))/pco_->h2v(i)/pco_->dx2v(j-1)
-                +(prim(IM1,k,j,i)+prim(IM1,k,j-1,i))/pco_->h2v(i)*pco_->dh2vd1(i);
-    }
-  } else {
-    for (int i=il; i<=iu; ++i)
-      len(i) = 2.0*prim(IM1,k,j,i)/pco_->h2v(i)*pco_->dh2vd1(i);
-  }
-  return;
-}
-
-// Flux of T in z dir
-void HydroDiffusion::CondZ(const int k, const int j, const int il, const int iu,
-    const AthenaArray<Real> &prim, AthenaArray<Real> &len)
-{
-  if(pmb_->block_size.nx3 > 1) {
-    for (int i=il; i<=iu; ++i){
-      len(i) = 2.0*(prim(IM3,k,j,i)-prim(IM3,k-1,j,i))/pco_->dx3v(k-1)/pco_->h31v(i)/pco_->h32v(j)
-               + (prim(IM1,k,j,i)+prim(IM1,k-1,j,i))*pco_->dh31vd1(i)/pco_->h31v(i) +
-                 (prim(IM2,k,j,i)+prim(IM2,k-1,j,i))*pco_->dh32vd2(j)/pco_->h32v(j);
-    }
-  } else {
-    for (int i=il; i<=iu; ++i){
-      len(i) = 2.0*prim(IM1,k,j,i)*pco_->dh31vd1(i)/pco_->h31v(i) +
-               2.0*prim(IM2,k,j,i)*pco_->dh32vd2(j)/pco_->h32v(j);
-    }
-  }
-  return;
-}
-
-

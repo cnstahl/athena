@@ -66,7 +66,9 @@ public:
   // TODO: clean up these declarations
   // TODO: Should this be a function?
   Real chiiso1(void);
-  void ThDiff(const AthenaArray<Real> &p,const AthenaArray<Real> &c, AthenaArray<Real> *flx);
+  void ThDiff(const AthenaArray<Real> &p,const AthenaArray<Real> &c,
+    AthenaArray<Real> *flx);
+
 
 private:
   MeshBlock *pmb_;    // ptr to meshblock containing this HydroDiffusion

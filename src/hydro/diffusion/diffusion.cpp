@@ -29,7 +29,9 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
   nuiso_ = pin->GetOrAddReal("problem","nuiso",0.0); // first coefficient
   inu_   = pin->GetOrAddInteger("problem","inu",0);  // default constant nuiso
   // The thermal conductivity is normalized (TODO: How?)
-  chiiso_ = pin->GetOrAddReal("problem", "chiiso_", 0.0);
+  chiiso_ = pin->GetOrAddReal("problem", "chiiso", 0.0);
+  std::cout << "nuiso " << nuiso_ << std::endl;
+  std::cout << "chiiso " << chiiso_ << std::endl;
   if (nuiso_ != 0.0) {
     hydro_diffusion_defined = true;
     // Allocate memory for fluxes
@@ -52,6 +54,8 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
     fz_.NewAthenaArray(ncells1);
     divv_.NewAthenaArray(ncells3,ncells2,ncells1);
   }
+
+  // TODO: clean up allocations
   else if (chiiso_ != 0.0) {
     therm_diffusion_defined = true;
     // Allocate memory for fluxes
