@@ -128,7 +128,7 @@ void HydroDiffusion::AddHydroDiffusionFlux(AthenaArray<Real> *flux)
   AthenaArray<Real> &x2flux=flux[X2DIR];
   AthenaArray<Real> &x3flux=flux[X3DIR];
 
-  if hydro_diffusion_defined: {
+  if (hydro_diffusion_defined) {
     AthenaArray<Real> &x1diflx=diflx[X1DIR];
     AthenaArray<Real> &x2diflx=diflx[X2DIR];
     AthenaArray<Real> &x3diflx=diflx[X3DIR];
@@ -150,7 +150,7 @@ void HydroDiffusion::AddHydroDiffusionFlux(AthenaArray<Real> *flux)
     }}}}
   }
 
-  if therm_diffusion_defined: {
+  if (therm_diffusion_defined) {
     AthenaArray<Real> &x1thflx=thflx[X1DIR];
     AthenaArray<Real> &x2thflx=thflx[X2DIR];
     AthenaArray<Real> &x3thflx=thflx[X3DIR];
