@@ -24,7 +24,7 @@
 
 //========================================================================================
 //! \fn void MeshBlock::ProblemGenerator(ParameterInput *pin)
-//  \brief Problem Generator for the Kelvin-Helmholz test
+//  \brief Problem Generator for the Gaussian profile
 //========================================================================================
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin)
@@ -33,19 +33,19 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   int iprob = pin->GetInteger("problem","iprob");
   Real chi = pin->GetReal("problem","chiiso");
 
-//--- iprob=1.  Decaying Gaussian profile
+//--- iprob=1.  Gaussian profile
 
   if (iprob == 1) {
+    chi = chi * 2.0 / 3.0;
     for (int k=ks; k<=ke; k++) {
     for (int j=js; j<=je; j++) {
     for (int i=is; i<=ie; i++) {
-      phydro->u(IDN,k,j,i) = 1.0;
+      phydro->u(IDN,k,j,i) = 2.0;
       phydro->u(IM1,k,j,i) = 0.0;
       phydro->u(IM2,k,j,i) = 0.0;
       phydro->u(IM3,k,j,i) = 0.0;
       
-      phydro->u(IEN,k,j,i) = exp(-(SQR(pcoord->x2v(j)))/(4.0*chi);
-      
+      phydro->u(IEN,k,j,i) = exp(-(SQR(pcoord->x1v(i)))/(4.0*chi));
     }}}
   }
 
