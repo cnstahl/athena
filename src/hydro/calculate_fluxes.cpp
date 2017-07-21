@@ -226,7 +226,8 @@ void Hydro::CalculateFluxes(AthenaArray<Real> &w, FaceField &b,
 } // end of omp parallel region
 
 //[diffusion
-  if (pdif->hydro_diffusion_defined) pdif->AddHydroDiffusionFlux(flux); //add hydro diffusion fluxes
+  if (pdif->hydro_diffusion_defined || pdif->therm_diffusion_defined) 
+        pdif->AddHydroDiffusionFlux(flux); //add hydro diffusion fluxes
   if (MAGNETIC_FIELDS_ENABLED && NON_BAROTROPIC_EOS &&
       pmb->pfield->pdif->field_diffusion_defined)
     pdif->AddEnergyFlux(bcc,flux); //add field diffusion only to energy diffusion

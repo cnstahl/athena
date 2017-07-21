@@ -108,7 +108,7 @@ void HydroDiffusion::CalcHydroDiffusionFlux(const AthenaArray<Real> &prim,
   // isotropic viscosity: to calc and add the flux due to viscous stress
   if (nuiso_ != 0.0) Viscosity(prim, cons, diflx);
 
-  // isotropic conductivity: calc and add fluxes due to thermal anisotropy
+  // isotropic th diffusivity: calc and add fluxes due to thermal anisotropy
   if (chiiso_ != 0.0) ThDiff(prim, cons, diflx);
 
   return;
@@ -127,25 +127,50 @@ void HydroDiffusion::AddHydroDiffusionFlux(AthenaArray<Real> *flux)
   AthenaArray<Real> &x1flux=flux[X1DIR];
   AthenaArray<Real> &x2flux=flux[X2DIR];
   AthenaArray<Real> &x3flux=flux[X3DIR];
-  AthenaArray<Real> &x1diflx=diflx[X1DIR];
-  AthenaArray<Real> &x2diflx=diflx[X2DIR];
-  AthenaArray<Real> &x3diflx=diflx[X3DIR];
 
-  for (int n=0; n<(NHYDRO); ++n){
-  for (int k=ks; k<=ke; ++k){
-  for (int j=js; j<=je; ++j){
-  for (int i=is; i<=ie; ++i){
-    x1flux(n,k,j,i) += x1diflx(n,k,j,i);
-    if(i==ie) x1flux(n,k,j,i+1) += x1diflx(n,k,j,i+1);
-    if (pmb_->block_size.nx2 > 1) {
-      x2flux(n,k,j,i) += x2diflx(n,k,j,i);
-      if(j==je) x2flux(n,k,j+1,i) += x2diflx(n,k,j+1,i);
-	}
-    if (pmb_->block_size.nx3 > 1) {
-      x3flux(n,k,j,i) += x3diflx(n,k,j,i);
-      if(k==ke) x3flux(n,k+1,j,i) += x3diflx(n,k+1,j,i);
-	}
-  }}}}
+  if hydro_diffusion_defined: {
+    AthenaArray<Real> &x1diflx=diflx[X1DIR];
+    AthenaArray<Real> &x2diflx=diflx[X2DIR];
+    AthenaArray<Real> &x3diflx=diflx[X3DIR];
+
+    for (int n=0; n<(NHYDRO); ++n){
+    for (int k=ks; k<=ke; ++k){
+    for (int j=js; j<=je; ++j){
+    for (int i=is; i<=ie; ++i){
+      x1flux(n,k,j,i) += x1diflx(n,k,j,i);
+      if(i==ie) x1flux(n,k,j,i+1) += x1diflx(n,k,j,i+1);
+      if (pmb_->block_size.nx2 > 1) {
+        x2flux(n,k,j,i) += x2diflx(n,k,j,i);
+        if(j==je) x2flux(n,k,j+1,i) += x2diflx(n,k,j+1,i);
+	    }
+      if (pmb_->block_size.nx3 > 1) {
+        x3flux(n,k,j,i) += x3diflx(n,k,j,i);
+        if(k==ke) x3flux(n,k+1,j,i) += x3diflx(n,k+1,j,i);
+      }
+    }}}}
+  }
+
+  if therm_diffusion_defined: {
+    AthenaArray<Real> &x1thflx=thflx[X1DIR];
+    AthenaArray<Real> &x2thflx=thflx[X2DIR];
+    AthenaArray<Real> &x3thflx=thflx[X3DIR];
+
+    for (int k=ks; k<=ke; ++k){
+    for (int j=js; j<=je; ++j){
+    for (int i=is; i<=ie; ++i){
+      // TODO: remove first index
+      x1flux(IEN,k,j,i) += x1thflx(0,k,j,i);
+      if(i==ie) x1flux(IEN,k,j,i+1) += x1thflx(0,k,j,i+1);
+      if (pmb_->block_size.nx2 > 1) {
+        x2flux(IEN,k,j,i) += x2thflx(n,k,j,i);
+        if(j==je) x2flux(IEN,k,j+1,i) += x2thflx(0,k,j+1,i);
+      }
+      if (pmb_->block_size.nx3 > 1) {
+        x3flux(IEN,k,j,i) += x3thflx(0,k,j,i);
+        if(k==ke) x3flux(IEN,k+1,j,i) += x3thflx(0,k+1,j,i);
+      }
+    }}}
+  }
 
   // template to add other diffusion processes
   //if (input_parameter_ != 0.0) OtherDiffusionProcess(dt, flux, prim,cons);
