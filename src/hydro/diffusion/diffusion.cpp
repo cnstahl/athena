@@ -30,8 +30,6 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
   inu_   = pin->GetOrAddInteger("problem","inu",0);  // default constant nuiso
   // The thermal conductivity is normalized (TODO: How?)
   chiiso_ = pin->GetOrAddReal("problem", "chiiso", 0.0);
-  std::cout << "nuiso " << nuiso_ << std::endl;
-  std::cout << "chiiso " << chiiso_ << std::endl;
   if (nuiso_ != 0.0) {
     hydro_diffusion_defined = true;
     // Allocate memory for fluxes
@@ -240,6 +238,7 @@ void HydroDiffusion::AddEnergyFlux(const AthenaArray<Real> &bc, AthenaArray<Real
 Real HydroDiffusion::NewDtDiff(const AthenaArray<Real> &prim, const Real len, const int k, const int j, const int i)
 {
   Real diff_dt;
+  Real ther_dt;
   Real cnuiso1 = nuiso1(prim,IM1,k,j,i);
   if(pmb_->block_size.nx3>1){
     diff_dt = SQR(len)/6.0/cnuiso1;
@@ -249,6 +248,16 @@ Real HydroDiffusion::NewDtDiff(const AthenaArray<Real> &prim, const Real len, co
     else
       diff_dt = SQR(len)/4.0/cnuiso1;
   }
+  Real chiiso = chiiso1();
+  if(pmb_->block_size.nx3>1){
+    ther_dt = SQR(len)/6.0/chiiso;
+  } else {
+    if(pmb_->block_size.nx2>1)
+      ther_dt = SQR(len)/8.0/chiiso;
+    else
+      ther_dt = SQR(len)/4.0/chiiso;
+  }
+  diff_dt = std::min(diff_dt, ther_dt);
   return diff_dt;
 }
 
