@@ -162,7 +162,7 @@ void HydroDiffusion::AddHydroDiffusionFlux(AthenaArray<Real> *flux)
       x1flux(IEN,k,j,i) += x1thflx(0,k,j,i);
       if(i==ie) x1flux(IEN,k,j,i+1) += x1thflx(0,k,j,i+1);
       if (pmb_->block_size.nx2 > 1) {
-        x2flux(IEN,k,j,i) += x2thflx(n,k,j,i);
+        x2flux(IEN,k,j,i) += x2thflx(0,k,j,i);
         if(j==je) x2flux(IEN,k,j+1,i) += x2thflx(0,k,j+1,i);
       }
       if (pmb_->block_size.nx3 > 1) {
