@@ -31,6 +31,7 @@ public:
   bool hydro_diffusion_defined;
   bool therm_diffusion_defined;
   AthenaArray<Real> diflx[3]; //stress tensor
+  AthenaArray<Real> thflx[3]; // thermal flux
 
   // functions
   void CalcHydroDiffusionFlux(const AthenaArray<Real> &p, const AthenaArray<Real> &c, AthenaArray<Real> *flx);
@@ -63,7 +64,6 @@ public:
     const AthenaArray<Real> &prim, AthenaArray<Real> &len);
 
   // thermal diffusion
-  // TODO: clean up these declarations
   // TODO: Should this be a function?
   Real chiiso1(void);
   void ThDiff(const AthenaArray<Real> &p,const AthenaArray<Real> &c,

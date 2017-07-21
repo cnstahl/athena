@@ -21,14 +21,15 @@
 void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
     const AthenaArray<Real> &cons, AthenaArray<Real> *diflx)
 {
-  AthenaArray<Real> &x1flux=diflx[X1DIR];
-  AthenaArray<Real> &x2flux=diflx[X2DIR];
-  AthenaArray<Real> &x3flux=diflx[X3DIR];
+  AthenaArray<Real> &x1flux=thflx[X1DIR];
+  AthenaArray<Real> &x2flux=thflx[X2DIR];
+  AthenaArray<Real> &x3flux=thflx[X3DIR];
   int il, iu, jl, ju, kl, ku;
   int is = pmb_->is; int js = pmb_->js; int ks = pmb_->ks;
   int ie = pmb_->ie; int je = pmb_->je; int ke = pmb_->ke;
-  Real denf;
+  Real denf, dTdx, dTdy, dTdz;
 
+  // TODO: support EOS
 
   // step-1. calculate the flux due to thermal difusion
   // i-direction
@@ -48,10 +49,10 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
       for (int i=is; i<=ie+1; ++i){
 		    Real chi1 = chiiso1();
         denf = 0.5*(prim(IDN,k,j,i)+prim(IDN,k,j,i-1));
-        fx_(i) = (prim(IPR,k,j,i)/prim(IDN,k,j,i) - prim(IPR,k,j,i-1)/
+        dTdx = (prim(IPR,k,j,i)/prim(IDN,k,j,i) - prim(IPR,k,j,i-1)/
                   prim(IDN,k,j,i-1))/pco_->dx1v(i-1);
         // TODO: minus sign?
-        x1flux(IEN,k,j,i) = -denf * chi1 * fx_(i);
+        x1flux(IEN,k,j,i) = -denf * chi1 * dTdx;
       }
     }
   }
@@ -69,15 +70,12 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
     for (int k=kl; k<=ku; ++k){
       for (int j=js; j<=je+1; ++j){
         // compute fluxes
-        for (int i=is; i<=ie; ++i){
-          fy_(i) = (prim(IPR,k,j,i)/prim(IDN,k,j,i)-prim(IPR,k,j-1,i)/
+        for (int i=il; i<=iu; ++i){
+          dTdy = (prim(IPR,k,j,i)/prim(IDN,k,j,i)-prim(IPR,k,j-1,i)/
                     prim(IDN,k,j-1,i))/pco_->h2v(i)/pco_->dx2v(j-1);
-        }
-        // store fluxes
-        for(int i=il; i<=iu; i++) {
 		      Real chi1 = chiiso1();
           denf = 0.5*(prim(IDN,k,j+1,i)+prim(IDN,k,j,i));
-          x2flux(IEN,k,j,i) = -denf * chi1 * fy_(i);
+          x2flux(IEN,k,j,i) = -denf * chi1 * dTdy;
         }
       }
     }
@@ -96,15 +94,12 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
     for (int k=ks; k<=ke+1; ++k){
       for (int j=jl; j<=ju; ++j){
         // compute fluxes
-        for (int i=is; i<=ie; ++i){
-          fz_(i) = (prim(IPR,k,j,i)/prim(IDN,k,j,i)-prim(IPR,k-1,j,i)/
+        for (int i=il; i<=iu; ++i){
+          dTdz = (prim(IPR,k,j,i)/prim(IDN,k,j,i)-prim(IPR,k-1,j,i)/
                    prim(IDN,k-1,j,i))/pco_->dx3v(k-1)/pco_->h31v(i)/pco_->h32v(j);
-        }
-        // store fluxes
-        for(int i=il; i<=iu; i++) {
 	        Real chi1 = chiiso1();
           denf = 0.5*(prim(IDN,k+1,j,i)+prim(IDN,k,j,i));
-          x3flux(IEN,k,j,i) = -denf * chi1 * fz_(i);
+          x3flux(IEN,k,j,i) = -denf * chi1 * dTdz;
 
         }
       }

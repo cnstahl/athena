@@ -55,29 +55,17 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
     divv_.NewAthenaArray(ncells3,ncells2,ncells1);
   }
 
-  // TODO: clean up allocations
-  else if (chiiso_ != 0.0) {
+  if (chiiso_ != 0.0) {
     therm_diffusion_defined = true;
     // Allocate memory for fluxes
     int ncells1 = pmb_->block_size.nx1 + 2*(NGHOST);
     int ncells2 = 1, ncells3 = 1;
     if (pmb_->block_size.nx2 > 1) ncells2 = pmb_->block_size.nx2 + 2*(NGHOST);
     if (pmb_->block_size.nx3 > 1) ncells3 = pmb_->block_size.nx3 + 2*(NGHOST);
-    //TODO: Allocate only arrays for energy, instead of NHYDRO?
-    diflx[X1DIR].NewAthenaArray(NHYDRO,ncells3,ncells2,ncells1+1);
-    diflx[X2DIR].NewAthenaArray(NHYDRO,ncells3,ncells2+1,ncells1);
-    diflx[X3DIR].NewAthenaArray(NHYDRO,ncells3+1,ncells2,ncells1);
-
-    x1area_.NewAthenaArray(ncells1+1);
-    x2area_.NewAthenaArray(ncells1);
-    x3area_.NewAthenaArray(ncells1);
-    x2area_p1_.NewAthenaArray(ncells1);
-    x3area_p1_.NewAthenaArray(ncells1);
-    vol_.NewAthenaArray(ncells1);
-    fx_.NewAthenaArray(ncells1);
-    fy_.NewAthenaArray(ncells1);
-    fz_.NewAthenaArray(ncells1);
-    divv_.NewAthenaArray(ncells3,ncells2,ncells1);
+    // Allocate arrays for just energy, instead of NHYDRO?
+    thflx[X1DIR].NewAthenaArray(1,ncells3,ncells2,ncells1+1);
+    thflx[X2DIR].NewAthenaArray(1,ncells3,ncells2+1,ncells1);
+    thflx[X3DIR].NewAthenaArray(1,ncells3+1,ncells2,ncells1);
   }
   //else {
   //  std::cout << "[HydroDiffusion]: unable to construct hydrodiffusion class" << std::endl;
