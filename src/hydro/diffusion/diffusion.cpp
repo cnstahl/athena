@@ -120,12 +120,14 @@ void HydroDiffusion::CalcHydroDiffusionFlux(const AthenaArray<Real> &prim,
 //----------------------------------------------------------------------------------------
 //! \fn void HydroDiffusion::AddHydroDiffusionFlux
 //  \brief Adds diffusion flux to hydro flux
+//  \only updates the fluxes that need to be updated
 
 void HydroDiffusion::AddHydroDiffusionFlux(AthenaArray<Real> *flux)
 {
 
   int is = pmb_->is; int js = pmb_->js; int ks = pmb_->ks;
   int ie = pmb_->ie; int je = pmb_->je; int ke = pmb_->ke;
+  int nstart, nend; // limits for flux update loop
 
   AthenaArray<Real> &x1flux=flux[X1DIR];
   AthenaArray<Real> &x2flux=flux[X2DIR];
@@ -134,7 +136,17 @@ void HydroDiffusion::AddHydroDiffusionFlux(AthenaArray<Real> *flux)
   AthenaArray<Real> &x2diflx=diflx[X2DIR];
   AthenaArray<Real> &x3diflx=diflx[X3DIR];
 
-  for (int n=0; n<(NHYDRO); ++n){
+  if (hydro_diffusion_defined) {
+    nstart = 0;
+    nend = NHYDRO;
+  } else if (therm_diffusion_defined) {
+    nstart = IEN;
+    nend = IEN + 1;
+  } else {
+    std::cout << "you shouldn't be here" << std::endl;
+  }
+
+  for (int n=nstart; n<nend; ++n){
   for (int k=ks; k<=ke; ++k){
   for (int j=js; j<=je; ++j){
   for (int i=is; i<=ie; ++i){

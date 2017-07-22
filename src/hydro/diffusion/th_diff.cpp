@@ -47,6 +47,9 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
     for (int j=jl; j<=ju; ++j){
       // compute and store fluxes
       for (int i=is; i<=ie+1; ++i){
+        // if viscosity is set, fluxes are updated there. Otherwise they need
+        // to be updated here
+        if (!hydro_diffusion_defined) x1flux(IEN,k,j,i) = 0;
 		    Real chi1 = chiiso1();
         denf = 0.5*(prim(IDN,k,j,i)+prim(IDN,k,j,i-1));
         dTdx = (prim(IPR,k,j,i)/prim(IDN,k,j,i) - prim(IPR,k,j,i-1)/
@@ -71,6 +74,7 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
       for (int j=js; j<=je+1; ++j){
         // compute fluxes
         for (int i=il; i<=iu; ++i){
+          if (!hydro_diffusion_defined) x1flux(IEN,k,j,i) = 0;
           dTdy = (prim(IPR,k,j,i)/prim(IDN,k,j,i)-prim(IPR,k,j-1,i)/
                     prim(IDN,k,j-1,i))/pco_->h2v(i)/pco_->dx2v(j-1);
 		      Real chi1 = chiiso1();
@@ -95,6 +99,7 @@ void HydroDiffusion::ThDiff(const AthenaArray<Real> &prim,
       for (int j=jl; j<=ju; ++j){
         // compute fluxes
         for (int i=il; i<=iu; ++i){
+          if (!hydro_diffusion_defined) x1flux(IEN,k,j,i) = 0;
           dTdz = (prim(IPR,k,j,i)/prim(IDN,k,j,i)-prim(IPR,k-1,j,i)/
                    prim(IDN,k-1,j,i))/pco_->dx3v(k-1)/pco_->h31v(i)/pco_->h32v(j);
 	        Real chi1 = chiiso1();
