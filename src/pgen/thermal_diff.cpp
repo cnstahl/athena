@@ -36,7 +36,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 //--- iprob=1.  Gaussian profile
 
   if (iprob == 1) {
-    chi = chi * 2.0 / 3.0;
     for (int k=ks; k<=ke; k++) {
     for (int j=js; j<=je; j++) {
     for (int i=is; i<=ie; i++) {
@@ -44,7 +43,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
       phydro->u(IM1,k,j,i) = 0.0;
       phydro->u(IM2,k,j,i) = 0.0;
       phydro->u(IM3,k,j,i) = 0.0;
-      
       phydro->u(IEN,k,j,i) = exp(-(SQR(pcoord->x1v(i)))/(4.0*chi));
     }}}
   }
