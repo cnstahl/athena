@@ -61,9 +61,9 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
     if (pmb_->block_size.nx2 > 1) ncells2 = pmb_->block_size.nx2 + 2*(NGHOST);
     if (pmb_->block_size.nx3 > 1) ncells3 = pmb_->block_size.nx3 + 2*(NGHOST);
     // Allocate arrays for just energy, instead of NHYDRO?
-    thflx[X1DIR].NewAthenaArray(1,ncells3,ncells2,ncells1+1);
-    thflx[X2DIR].NewAthenaArray(1,ncells3,ncells2+1,ncells1);
-    thflx[X3DIR].NewAthenaArray(1,ncells3+1,ncells2,ncells1);
+    diflx[X1DIR].NewAthenaArray(NHYDRO,ncells3,ncells2,ncells1+1);
+    diflx[X2DIR].NewAthenaArray(NHYDRO,ncells3,ncells2+1,ncells1);
+    diflx[X3DIR].NewAthenaArray(NHYDRO,ncells3+1,ncells2,ncells1);
   }
   //else {
   //  std::cout << "[HydroDiffusion]: unable to construct hydrodiffusion class" << std::endl;
@@ -146,28 +146,6 @@ void HydroDiffusion::AddHydroDiffusionFlux(AthenaArray<Real> *flux)
         if(k==ke) x3flux(n,k+1,j,i) += x3diflx(n,k+1,j,i);
       }
     }}}}
-  }
-
-  if (therm_diffusion_defined) {
-    AthenaArray<Real> &x1thflx=thflx[X1DIR];
-    AthenaArray<Real> &x2thflx=thflx[X2DIR];
-    AthenaArray<Real> &x3thflx=thflx[X3DIR];
-
-    for (int k=ks; k<=ke; ++k){
-    for (int j=js; j<=je; ++j){
-    for (int i=is; i<=ie; ++i){
-      // TODO: remove first index
-      x1flux(IEN,k,j,i) += x1thflx(0,k,j,i);
-      if(i==ie) x1flux(IEN,k,j,i+1) += x1thflx(0,k,j,i+1);
-      if (pmb_->block_size.nx2 > 1) {
-        x2flux(IEN,k,j,i) += x2thflx(0,k,j,i);
-        if(j==je) x2flux(IEN,k,j+1,i) += x2thflx(0,k,j+1,i);
-      }
-      if (pmb_->block_size.nx3 > 1) {
-        x3flux(IEN,k,j,i) += x3thflx(0,k,j,i);
-        if(k==ke) x3flux(IEN,k+1,j,i) += x3thflx(0,k+1,j,i);
-      }
-    }}}
   }
 
   // template to add other diffusion processes

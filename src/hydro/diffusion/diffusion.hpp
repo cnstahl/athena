@@ -31,7 +31,6 @@ public:
   bool hydro_diffusion_defined;
   bool therm_diffusion_defined;
   AthenaArray<Real> diflx[3]; //stress tensor
-  AthenaArray<Real> thflx[3]; // thermal flux
 
   // functions
   void CalcHydroDiffusionFlux(const AthenaArray<Real> &p, const AthenaArray<Real> &c, AthenaArray<Real> *flx);
