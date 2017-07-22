@@ -113,7 +113,7 @@ void HydroDiffusion::Viscosity(const AthenaArray<Real> &prim,
         x2flux(IEN,ks,js,i) = prim(IM1,ks,js,i)*x2flux(IM1,ks,js,i) +
                               prim(IM2,ks,js,i)*x2flux(IM2,ks,js,i) +
                               prim(IM3,ks,js,i)*x2flux(IM3,ks,js,i);
-      else x2flux(IEN,ks,j,i) = 0;
+      else x2flux(IEN,ks,js,i) = 0;
     }
     for(int i=il; i<=iu; i++) {
       x2flux(IM1,ks,je+1,i) = x2flux(IM1,ks,js,i);
@@ -121,7 +121,7 @@ void HydroDiffusion::Viscosity(const AthenaArray<Real> &prim,
       x2flux(IM3,ks,je+1,i) = x2flux(IM3,ks,js,i);
       if (NON_BAROTROPIC_EOS)
         x2flux(IEN,ks,je+1,i) =x2flux(IEN,ks,js,i);
-      else x2flux(IEN,s,je+1,i) = 0;
+      else x2flux(IEN,ks,je+1,i) = 0;
     }
   }
 // k-direction
