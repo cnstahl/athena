@@ -32,6 +32,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   // Read problem parameters
   int iprob = pin->GetInteger("problem","iprob");
   Real chi = pin->GetReal("problem","chiiso");
+  Real gamma = pin->GetReal("hydro","gamma");
 
 //--- iprob=1.  Gaussian profile
 
@@ -43,7 +44,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
       phydro->u(IM1,k,j,i) = 0.0;
       phydro->u(IM2,k,j,i) = 0.0;
       phydro->u(IM3,k,j,i) = 0.0;
-      phydro->u(IEN,k,j,i) = exp(-(SQR(pcoord->x1v(i)))/(4.0*chi*2/5));
+      phydro->u(IEN,k,j,i) = exp(-(SQR(pcoord->x1v(i)))/(4.0*chi * (gamma - 1)));
     }}}
   }
 
