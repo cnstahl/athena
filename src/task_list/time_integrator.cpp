@@ -534,8 +534,7 @@ enum TaskStatus TimeIntegratorTaskList::HydroDiffusion(MeshBlock *pmb, int step)
   Field *pf=pmb->pfield;
 
   // return if there are no diffusion to be added
-  if (ph->pdif->hydro_diffusion_defined == false &&
-      ph->pdif->therm_diffusion_defined == false) return TASK_NEXT;
+  if (ph->pdif->hydro_diffusion_defined == false) return TASK_NEXT;
 
   Real dt = (step_wghts[(step-1)].c)*(pmb->pmy_mesh->dt);
   Real time;

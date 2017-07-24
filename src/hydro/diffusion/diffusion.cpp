@@ -23,7 +23,7 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
   pmb_ = pmy_hydro_->pmy_block;
   pco_ = pmb_->pcoord;
   hydro_diffusion_defined = false;
-  therm_diffusion_defined = false;
+
 
   // read parameters such as viscosity, thermal conductivity, from input block
   nuiso_ = pin->GetOrAddReal("problem","nuiso",0.0); // first coefficient
@@ -51,11 +51,11 @@ HydroDiffusion::HydroDiffusion(Hydro *phyd, ParameterInput *pin)
     fy_.NewAthenaArray(ncells1);
     fz_.NewAthenaArray(ncells1);
     divv_.NewAthenaArray(ncells3,ncells2,ncells1);
-  }
+  } 
+  else if (chiiso_ != 0.0) {
+    hydro_diffusion_defined = true;
 
-  if (chiiso_ != 0.0) {
-    therm_diffusion_defined = true;
-    // Allocate memory for fluxes
+    // Allocate memory for fluxes but not extra things
     int ncells1 = pmb_->block_size.nx1 + 2*(NGHOST);
     int ncells2 = 1, ncells3 = 1;
     if (pmb_->block_size.nx2 > 1) ncells2 = pmb_->block_size.nx2 + 2*(NGHOST);
@@ -89,7 +89,7 @@ HydroDiffusion::~HydroDiffusion()
     fz_.DeleteAthenaArray();
     divv_.DeleteAthenaArray();
   }
-  if (chiiso_ != 0.0){
+  else if (chiiso_ != 0.0){
     diflx[X1DIR].DeleteAthenaArray();
     diflx[X2DIR].DeleteAthenaArray();
     diflx[X3DIR].DeleteAthenaArray();
@@ -136,10 +136,10 @@ void HydroDiffusion::AddHydroDiffusionFlux(AthenaArray<Real> *flux)
   AthenaArray<Real> &x2diflx=diflx[X2DIR];
   AthenaArray<Real> &x3diflx=diflx[X3DIR];
 
-  if (hydro_diffusion_defined) {
+  if (nuiso_ != 0) {
     nstart = 0;
     nend = NHYDRO;
-  } else if (therm_diffusion_defined) {
+  } else if (chiiso_ != 0) {
     nstart = IEN;
     nend = IEN + 1;
   } else {

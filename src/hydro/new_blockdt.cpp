@@ -114,7 +114,7 @@ Real Hydro::NewBlockTimeStep(void)
 
           }
           //[diffusion
-          if (pmb->phydro->pdif->hydro_diffusion_defined || pmb->phydro->pdif->therm_diffusion_defined) {
+          if (pmb->phydro->pdif->hydro_diffusion_defined) {
             dt1(i)=std::min(pmb->phydro->pdif->NewDtDiff(w,pmb->pcoord->dx1f(i),k,j,i),dt1(i));
             dt2(i)=std::min(pmb->phydro->pdif->NewDtDiff(w,pmb->pcoord->dx2f(j)*pmb->pcoord->h2v(i),k,j,i),dt2(i));
             dt3(i)=std::min(pmb->phydro->pdif->NewDtDiff(w,pmb->pcoord->dx3f(k)*pmb->pcoord->h31v(i)*fabs(pmb->pcoord->h32v(j)),k,j,i),dt3(i));

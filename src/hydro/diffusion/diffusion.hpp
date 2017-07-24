@@ -29,7 +29,6 @@ public:
 
   // data
   bool hydro_diffusion_defined;
-  bool therm_diffusion_defined;
   AthenaArray<Real> diflx[3]; //stress tensor
 
   // functions
