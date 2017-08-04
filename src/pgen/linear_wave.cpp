@@ -307,6 +307,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   // Initialize the magnetic fields.  Note wavevector, eigenvectors, and other variables
   // are set in InitUserMeshData
 
+  Real chi; 
+  Real nu;
+
   if (MAGNETIC_FIELDS_ENABLED) {
     AthenaArray<Real> a1,a2,a3;
     int nx1 = (ie-is)+1 + 2*(NGHOST);
@@ -414,16 +417,22 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
     a3.DeleteAthenaArray();
   }
 
+  chi = pin->GetOrAddReal("problem","chi",0.0);
+  nu  = pin->GetOrAddReal("problem","nu",0.0);
+
   // initialize conserved variables
   for (int k=ks; k<=ke; k++) {
   for (int j=js; j<=je; j++) {
     for (int i=is; i<=ie; i++) {
       Real x = cos_a2*(pcoord->x1v(i)*cos_a3 + pcoord->x2v(j)*sin_a3) + pcoord->x3v(k)*sin_a2;
       Real sn = sin(k_par*x);
+      Real cosine = cos(k_par*x);
+      Real gfact = (gm1*gm1)/gam;
+      Real diffact = gfact*chi + 4.0*nu/3.0;
 
-      phydro->u(IDN,k,j,i) = d0 + amp*sn*rem[0][wave_flag];
+      phydro->u(IDN,k,j,i) = d0 + amp*sn*rem[0][wave_flag] - amp*k_par*gfact*cosine*chi;
 
-      Real mx = d0*vflow + amp*sn*rem[1][wave_flag];
+      Real mx = d0*vflow + amp*sn*rem[1][wave_flag] + amp*k_par*cosine/2.0;
       Real my = amp*sn*rem[2][wave_flag];
       Real mz = amp*sn*rem[3][wave_flag];
 
