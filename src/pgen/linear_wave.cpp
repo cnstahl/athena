@@ -432,7 +432,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 
       phydro->u(IDN,k,j,i) = d0 + amp*sn*rem[0][wave_flag] - amp*k_par*gfact*cosine*chi;
 
-      Real mx = d0*vflow + amp*sn*rem[1][wave_flag] + amp*k_par*cosine/2.0;
+      Real mx = d0*vflow + amp*sn*rem[1][wave_flag] + amp*k_par*diffact*cosine/2.0;
       Real my = amp*sn*rem[2][wave_flag];
       Real mz = amp*sn*rem[3][wave_flag];
 
