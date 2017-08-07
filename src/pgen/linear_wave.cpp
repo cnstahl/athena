@@ -417,8 +417,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
     a3.DeleteAthenaArray();
   }
 
-  chi = pin->GetOrAddReal("problem","chi",0.0);
-  nu  = pin->GetOrAddReal("problem","nu",0.0);
+  chi = pin->GetOrAddReal("problem","chiiso",0.0);
+  nu  = pin->GetOrAddReal("problem","nuiso",0.0);
 
   // initialize conserved variables
   for (int k=ks; k<=ke; k++) {
@@ -428,7 +428,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
       Real sn = sin(k_par*x);
       Real cosine = cos(k_par*x);
       Real gfact = (gm1*gm1)/gam;
-      Real diffact = gfact*chi + 4.0*nu/3.0;
+      Real diffact = gfact*chi - 4.0*nu/3.0;
 
       phydro->u(IDN,k,j,i) = d0 + amp*sn*rem[0][wave_flag] - amp*k_par*gfact*cosine*chi;
 
