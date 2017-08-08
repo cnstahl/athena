@@ -4,7 +4,7 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //========================================================================================
 //! \file kh.cpp
-//  \brief Problem generator for KH instability.
+//  \brief Problem generator for KH instability. 
 //
 // Sets up two different problems:
 //   - iprob=1: slip surface with random perturbations
@@ -29,7 +29,7 @@
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin)
 {
-  long int iseed = -1 - gid;
+  long int iseed = -1;
   Real gm1 = peos->GetGamma() - 1.0;
 
   // Read problem parameters
@@ -53,7 +53,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
         phydro->u(IM1,k,j,i) = -drat*(vflow + amp*(ran2(&iseed) - 0.5));
         phydro->u(IM2,k,j,i) = drat*amp*(ran2(&iseed) - 0.5);
       }
-      // Pressure scaled to give a sound speed of 1 with gamma=1.4
+      // Pressure scaled to give a sound speed of 1 with gamma=1.4 
       if (NON_BAROTROPIC_EOS) {
         phydro->u(IEN,k,j,i) = 2.5/gm1 + 0.5*(SQR(phydro->u(IM1,k,j,i)) +
           SQR(phydro->u(IM2,k,j,i)))/phydro->u(IDN,k,j,i);
@@ -64,15 +64,18 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 //--- iprob=2. Two uniform density flows with single mode pert., based on Ryu&Jones.
 
   if (iprob == 2) {
-    Real a = 0.05;
+    Real a     = 0.05;
     Real sigma = 0.2;
+    Real z1    = 0.5;
+    Real z2    = 1.5;
+    Real d_rho = 1.0;
     for (int k=ks; k<=ke; k++) {
     for (int j=js; j<=je; j++) {
     for (int i=is; i<=ie; i++) {
-      phydro->u(IDN,k,j,i) = 1.0;
-      phydro->u(IM1,k,j,i) = vflow*tanh((pcoord->x2v(j))/a);
+      phydro->u(IDN,k,j,i) = 1.0 + 0.5*d_rho*(tanh((pcoord->x2v(j) - z1)/a) - tanh((pcoord->x2v(j) - z2)/a));
+      phydro->u(IM1,k,j,i) = vflow*(tanh((pcoord->x2v(j) - z1)/a) - tanh((pcoord->x2v(j) - z2)/a) - 1);
       phydro->u(IM2,k,j,i) = amp*sin(2.0*PI*pcoord->x1v(i))
-        *exp(-(SQR(pcoord->x2v(j)))/SQR(sigma));
+        *(exp(-(SQR(pcoord->x2v(j) - z1))/SQR(sigma)) + exp(-(SQR(pcoord->x2v(j) - z2))/SQR(sigma)));
       phydro->u(IM3,k,j,i) = 0.0;
       if (NON_BAROTROPIC_EOS) {
         phydro->u(IEN,k,j,i) = 1.0/gm1 + 0.5*(SQR(phydro->u(IM1,k,j,i)) +
